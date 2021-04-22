@@ -1,17 +1,39 @@
 # Classification
+This section showcases benchmark classification results for various models from the 🤗 Transformers v4.x API.
 
 ## AG News dataset
 
-### DistilBERT vs. ALBERT
+The AG News dataset is downloaded and processed from the [Hugging Face Datasets repository](https://huggingface.co/docs/datasets/). AG is a collection of more than 1 million news articles. News articles have been gathered from more than 2000 news sources by ComeToMyHead in more than 1 year of activity. The training set contains 120,000 samples, while the test set contains 7,600 samples.
 
-* DistilBERT uses a teacher-student model distillation approach to reduce the number of parameters in BERT. The resulting model has ~60M parameters, which is around half that of BERT-base.
-* ALBERT uses a similar architecture as BERT, but optimizes the projection block through a factorized embedding matrix representation. In addition, ALBERT introduces parameter sharing across layers, increasing the compactness. These two design changes results in a 90% reduction in the number of unique parameters compared to BERT-base.
-    * However, additional experiments showed that ALBERT has, in effect, more effective parameters than the equivalent BERT model. Because of parameter sharing, ALBERT stores roughly 1/10th the number of parameters as BERT, but during training/inference, the input tokens must pass through 12 encoder stacks (just like they do in BERT).
-    * Since ALBERT-base has ~12 million unique parameters, and it has 12 encoders, the effective number of parameters (that participate in training/inference) is ~144 million parameters, which is 1.3x times that of BERT-base (which has 110M parameters).
+## Evaluation
+The script `predictors.py` contains predictor classes for each model, and can be used to run evaluations. The results and the performance (timing numbers + accuracy/F1) are listed accordingly. **Note that the actual timing numbers may not be the same when run on a different machine**, as it depends on many factors.
 
-### Observations
+### DistilBERT PyTorch (CPU)
+```
+100%|███████████████████████████████████████████████████████████████████| 7600/7600 [06:14<00:00, 20.28it/s]
 
-* ALBERT takes longer to train than BERT, and significantly longer to train than DistilBERT. This is despite the fact that, on paper, ALBERT is a "compressed" model. In reality, the number of effective parameters present in ALBERT (due to the 12 encoder stacks) is 12 times the number of parameters stated in the paper.
-* Both DistilBERT and ALBERT are significantly smaller in size than BERT, with ALBERT being the smallest in size (due to the much smaller number of unique parameters being stored).
-* Although ALBERT, on paper, achieves significant levels of compression, its memory consumption is much higher than BERT (this could be due to the factorized embedding matrix and the way it is represented internally). In addition, the PyTorch implementation of ALBERT seems to be a little more memory-hungry than the TF version ([see this GitHub issue](https://github.com/huggingface/transformers/issues/2284)) - this is an ongoing issue and as a result, **ALBERT requires a smaller batch size** (8) as opposed to BERT and DistilBERT (16), with all other hyperparameters being the same.
-* Overall, DistilBERT offers the best compromise of model size, training/inference time and accuracy.
+Accuracy: 94.013
+Macro F1-score: 94.014
+Micro F1-score: 94.013
+python3.9 predictor.py  1487.03s user 5.25s system 392% cpu 6:20.12 total
+```
+
+### DistilBERT ONNX (`intra_op_num_threads=3`)
+```
+100%|███████████████████████████████████████████████████████████████████| 7600/7600 [04:04<00:00, 31.08it/s]
+
+Accuracy: 93.895
+Macro F1-score: 93.888
+Micro F1-score: 93.895
+python3.9 predictor.py  733.93s user 1.61s system 288% cpu 4:14.63 total
+```
+
+### DistilBERT ONNX (`intra_op_num_threads=2`)
+```
+100%|███████████████████████████████████████████████████████████████████| 7600/7600 [05:23<00:00, 23.51it/s]
+
+Accuracy: 93.895
+Macro F1-score: 93.888
+Micro F1-score: 93.895
+python3.9 predictor.py  646.98s user 1.26s system 196% cpu 5:29.91 total
+```
