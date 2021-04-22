@@ -10,30 +10,35 @@ The script `predictors.py` contains predictor classes for each model, and can be
 
 ### DistilBERT PyTorch (CPU)
 ```
+$ time python3.9 predictors.py
 100%|███████████████████████████████████████████████████████████████████| 7600/7600 [06:14<00:00, 20.28it/s]
 
 Accuracy: 94.013
 Macro F1-score: 94.014
 Micro F1-score: 94.013
-python3.9 predictor.py  1487.03s user 5.25s system 392% cpu 6:20.12 total
-```
-
-### DistilBERT ONNX (`intra_op_num_threads=3`)
-```
-100%|███████████████████████████████████████████████████████████████████| 7600/7600 [04:04<00:00, 31.08it/s]
-
-Accuracy: 93.895
-Macro F1-score: 93.888
-Micro F1-score: 93.895
-python3.9 predictor.py  733.93s user 1.61s system 288% cpu 4:14.63 total
+python3.9 predictors.py  1487.03s user 5.25s system 392% cpu 6:20.12 total
 ```
 
 ### DistilBERT ONNX (`intra_op_num_threads=2`)
 ```
+$ time python3.9 predictors.py
 100%|███████████████████████████████████████████████████████████████████| 7600/7600 [05:23<00:00, 23.51it/s]
 
 Accuracy: 93.895
 Macro F1-score: 93.888
 Micro F1-score: 93.895
-python3.9 predictor.py  646.98s user 1.26s system 196% cpu 5:29.91 total
+python3.9 predictors.py  646.98s user 1.26s system 196% cpu 5:29.91 total
+```
+
+### DistilBERT ONNX (`intra_op_num_threads=3`)
+The `intra_op_num_threads` argument is quite influential in performance, so this number is upped to see if it helps with performance.
+
+```
+$ time python3.9 predictors.py
+100%|███████████████████████████████████████████████████████████████████| 7600/7600 [04:04<00:00, 31.08it/s]
+
+Accuracy: 93.895
+Macro F1-score: 93.888
+Micro F1-score: 93.895
+python3.9 predictors.py  733.93s user 1.61s system 288% cpu 4:14.63 total
 ```
